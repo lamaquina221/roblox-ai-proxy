@@ -1,32 +1,32 @@
-const express = require('express');
-const fetch = require('node-fetch');
-const app = express();
-app.use(express.json());
+local HttpService = game:GetService("HttpService")
 
-app.post('/chat', async (req, res) => {
-    const userMessage = req.body.prompt;
+local PROXY_URL = "https://roblox-ai-proxy-qi5x.onrender.com/chat"
 
-    try {
-        // Reemplaza esto con la URL real y el modelo que te proporcione FreeLLMAPI
-        const aiResponse = await fetch('https://api.freellmapi.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer TU_API_KEY_DE_FREELLMAPI'
-            },
-            body: JSON.stringify({
-                model: "nombre-del-modelo-gratuito", 
-                messages: [{ role: "user", content: userMessage }]
-            })
-        });
-
-        const data = await aiResponse.json();
-        const reply = data.choices[0].message.content;
-        
-        res.json({ reply: reply });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+local function hablarConIA(mensaje, nombreModelo)
+    local datos = {
+        prompt = mensaje,
+        model = nombreModelo or "gpt-4o-mini", -- Aquí pones el modelo que quieras usar
+        apiKey = "TU_API_KEY_DE_FREELLMAPI"     -- (Opcional si ya la pusiste fija en el servidor)
     }
-});
+    
+    local success, response = pcall(function()
+        return HttpService:PostAsync(
+            PROXY_URL,
+            HttpService:JSONEncode(datos),
+            Enum.HttpContentType.ApplicationJson
+        )
+    end)
+    
+    if success then
+        local decoded = HttpService:JSONDecode(response)
+        print("Respuesta (" .. nombreModelo .. "): ", decoded.reply)
+        return decoded.reply
+    else
+        warn("Error de conexión: ", response)
+        nil
+    end
+end
 
-app.listen(3000, () => console.log('Proxy listo en el puerto 3000'));
+-- Ejemplos de uso cambiando de modelo al vuelo:
+hablarConIA("Hola, ¿cuánto es 2+2?", "nombre-del-modelo-1")
+hablarConIA("Escribe un poema corto", "nombre-del-modelo-2")
