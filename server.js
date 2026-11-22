@@ -5,8 +5,7 @@ app.use(express.json());
 
 app.post('/chat', async (req, res) => {
     const userMessage = req.body.prompt;
-    // Si desde Roblox especificas un modelo, lo usa; si no, por defecto usa uno estándar compatible
-    const modelName = req.body.model || "gpt-4o-mini"; 
+    const modelName = req.body.model || "Fusión"; 
 
     try {
         const aiResponse = await fetch('https://api.freellmapi.com/v1/chat/completions', {
@@ -22,12 +21,7 @@ app.post('/chat', async (req, res) => {
         });
 
         const data = await aiResponse.json();
-        
-        if (data.choices && data.choices.length > 0) {
-            res.json({ reply: data.choices[0].message.content });
-        } else {
-            res.status(500).json({ error: "Respuesta inesperada de la IA", details: data });
-        }
+        res.json({ reply: data.choices[0].message.content });
         
     } catch (error) {
         res.status(500).json({ error: error.message });
